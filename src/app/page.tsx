@@ -3,7 +3,6 @@ import { useState, useEffect, useRef } from 'react';
 import { generatePuzzle, shuffle } from '@/lib/puzzle-generator';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { generateHint } from "@/ai/flows/hint-generator";
 import { toast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
@@ -11,11 +10,7 @@ import { cn } from "@/lib/utils";
 import { Hint, Timer } from "@/components/puzzle-components";
 
 const PUZZLE_SIZE = 4; // You can change this to 3 for a 3x3 puzzle, etc.
-
-// Function to convert number to letter
-const numberToLetter = (num: number): string => {
-  return String.fromCharCode(64 + num); // A = 1, B = 2, etc.
-};
+const IMAGE_URL = 'https://picsum.photos/400/400';
 
 export default function Home() {
   const [puzzle, setPuzzle] = useState<number[]>([]);
@@ -25,11 +20,26 @@ export default function Home() {
   const [moveCount, setMoveCount] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameWon, setGameWon] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const imageRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     const generatedPuzzle = generatePuzzle(PUZZLE_SIZE * PUZZLE_SIZE);
     setPuzzle(generatedPuzzle);
     resetPuzzle(generatedPuzzle); // Initialize with a shuffled puzzle
+  }, []);
+
+  useEffect(() => {
+    const img = new Image();
+    img.src = IMAGE_URL;
+    img.onload = () => {
+      setImageLoaded(true);
+    };
+    img.onerror = () => {
+      setImageError(true);
+    };
+    imageRef.current = img;
   }, []);
 
   const resetPuzzle = (initialPuzzle: number[]) => {
@@ -109,6 +119,9 @@ export default function Home() {
     return hintIndex !== null && hintIndex === index;
   };
 
+  const tileWidth = imageLoaded ? imageRef.current!.width / PUZZLE_SIZE : 0;
+  const tileHeight = imageLoaded ? imageRef.current!.height / PUZZLE_SIZE : 0;
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-2">
       <Toaster />
@@ -116,14 +129,18 @@ export default function Home() {
 
       <Card className="w-full max-w-md">
         <CardContent className="flex flex-col items-center">
+          {imageError && (
+            <div className="text-red-500">Failed to load image. Please try again later.</div>
+          )}
+
           <div className="grid" style={{ gridTemplateColumns: `repeat(${PUZZLE_SIZE}, 1fr)` }}>
             {shuffledPuzzle.map((piece, index) => (
               <div
                 key={index}
                 className={cn(
-                  "w-16 h-16 border border-gray-200 flex items-center justify-center text-xl font-bold cursor-pointer",
+                  "w-24 h-24 border border-gray-200 flex items-center justify-center overflow-hidden cursor-pointer",
                   selectedPieceIndex === index && "ring-2 ring-primary",
-                  isCorrectPosition(index) && "bg-accent text-white",
+                  isCorrectPosition(index) && "bg-accent/50",
                   gameWon && "cursor-default"
                 )}
                 onClick={() => !gameWon && handlePieceClick(index)}
@@ -135,7 +152,18 @@ export default function Home() {
                 draggable={selectedPieceIndex === index && !gameWon}
                 onDragStart={(e) => {}}
               >
-                {numberToLetter(piece)}
+                {imageLoaded ? (
+                  <div
+                    style={{
+                      width: tileWidth,
+                      height: tileHeight,
+                      backgroundImage: `url(${IMAGE_URL})`,
+                      backgroundPosition: `-${(piece - 1) % PUZZLE_SIZE * tileWidth}px -${Math.floor((piece - 1) / PUZZLE_SIZE) * tileHeight}px`,
+                    }}
+                  />
+                ) : (
+                  <div className="animate-pulse bg-gray-300 w-full h-full" />
+                )}
               </div>
             ))}
           </div>
