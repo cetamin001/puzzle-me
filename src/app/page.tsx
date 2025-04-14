@@ -1,4 +1,3 @@
-
 "use client";
 import { useState, useEffect, useRef } from 'react';
 import { generatePuzzle, shuffle } from '@/lib/puzzle-generator';
@@ -12,6 +11,11 @@ import { cn } from "@/lib/utils";
 import { Hint, Timer } from "@/components/puzzle-components";
 
 const PUZZLE_SIZE = 4; // You can change this to 3 for a 3x3 puzzle, etc.
+
+// Function to convert number to letter
+const numberToLetter = (num: number): string => {
+  return String.fromCharCode(64 + num); // A = 1, B = 2, etc.
+};
 
 export default function Home() {
   const [puzzle, setPuzzle] = useState<number[]>([]);
@@ -131,7 +135,7 @@ export default function Home() {
                 draggable={selectedPieceIndex === index && !gameWon}
                 onDragStart={(e) => {}}
               >
-                {piece}
+                {numberToLetter(piece)}
               </div>
             ))}
           </div>
