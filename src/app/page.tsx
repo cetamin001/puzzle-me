@@ -40,6 +40,7 @@ export default function Home() {
   const [imageError, setImageError] = useState(false);
   const imageRef = useRef<HTMLImageElement>(null);
 	const [open, setOpen] = useState(false)
+  const [openHighScores, setOpenHighScores] = useState(false);
 	const [geminiApiKey, setGeminiApiKey] = useState('');
   const [highScores, setHighScores] = useState<Score[]>([]);
   const [time, setTime] = useState(0);
@@ -253,21 +254,33 @@ export default function Home() {
             <p>Moves: {moveCount}</p>
             <Timer isRunning={gameStarted && !gameWon} onTime={(time) => setTime(time)} />
           </div>
-        </CardContent>
-      </Card>
-
-      <Card className="w-full max-w-md mt-4">
-        <CardContent>
-          <h2 className="text-lg font-semibold mb-2">High Scores</h2>
-          <ScrollArea className="h-[200px] w-full rounded-md border">
-            <div className="divide-y divide-border">
-              {highScores.map((score, index) => (
-                <div key={index} className="flex items-center justify-between py-2">
-                  <span>{index + 1}. Moves: {score.moves}, Time: {score.time}s</span>
-                </div>
-              ))}
-            </div>
-          </ScrollArea>
+          <Dialog open={openHighScores} onOpenChange={setOpenHighScores}>
+            <DialogTrigger asChild>
+              <Button variant="outline">High Scores</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>High Scores</DialogTitle>
+                <DialogDescription>
+                  Top 10 puzzle scores.
+                </DialogDescription>
+              </DialogHeader>
+              <CardContent>
+                <ScrollArea className="h-[200px] w-full rounded-md border">
+                  <div className="divide-y divide-border">
+                    {highScores.map((score, index) => (
+                      <div key={index} className="flex items-center justify-between py-2">
+                        <span>{index + 1}. Moves: {score.moves}, Time: {score.time}s</span>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+              <DialogFooter>
+                <Button type="button" onClick={() => setOpenHighScores(false)}>Close</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </CardContent>
       </Card>
     </div>
