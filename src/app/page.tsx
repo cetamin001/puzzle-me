@@ -18,9 +18,15 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const PUZZLE_SIZE = 4; // You can change this to 3 for a 3x3 puzzle, etc.
 const IMAGE_URL = 'https://picsum.photos/400/400';
+
+interface Score {
+  moves: number;
+  time: number;
+}
 
 export default function Home() {
   const [puzzle, setPuzzle] = useState<number[]>([]);
@@ -35,12 +41,27 @@ export default function Home() {
   const imageRef = useRef<HTMLImageElement>(null);
 	const [open, setOpen] = useState(false)
 	const [geminiApiKey, setGeminiApiKey] = useState('');
+  const [highScores, setHighScores] = useState<Score[]>([]);
+  const [time, setTime] = useState(0);
 
   useEffect(() => {
+    const storedApiKey = localStorage.getItem('geminiApiKey') || '';
+    setGeminiApiKey(storedApiKey);
+
+    const storedHighScores = localStorage.getItem('highScores');
+    if (storedHighScores) {
+      setHighScores(JSON.parse(storedHighScores));
+    }
+
     const generatedPuzzle = generatePuzzle(PUZZLE_SIZE * PUZZLE_SIZE);
     setPuzzle(generatedPuzzle);
     resetPuzzle(generatedPuzzle); // Initialize with a shuffled puzzle
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('highScores', JSON.stringify(highScores));
+  }, [highScores]);
+
 
   useEffect(() => {
     const img = new Image();
@@ -62,6 +83,7 @@ export default function Home() {
     setGameWon(false);
     setSelectedPieceIndex(null);
     setHintIndex(null);
+    setTime(0);
   };
 
   const handlePieceClick = (index: number) => {
@@ -123,13 +145,26 @@ export default function Home() {
           title: "Congratulations!",
           description: "You solved the puzzle!",
         });
+        updateHighScores({ moves: moveCount, time: time });
       }
     }
-  }, [shuffledPuzzle, puzzle, gameStarted]);
+  }, [shuffledPuzzle, puzzle, gameStarted, moveCount, time]);
+
+  const updateHighScores = (newScore: Score) => {
+    const newHighScores = [...highScores, newScore]
+      .sort((a, b) => (a.moves + a.time) - (b.moves + b.time))
+      .slice(0, 10);
+    setHighScores(newHighScores);
+  };
 
   const isCorrectPosition = (index: number) => {
     return hintIndex !== null && hintIndex === index;
   };
+
+  const handleApiKeyUpdate = () => {
+		localStorage.setItem('geminiApiKey', geminiApiKey);
+		setOpen(false);
+	};
 
   const tileWidth = imageLoaded ? imageRef.current!.width / PUZZLE_SIZE : 0;
   const tileHeight = imageLoaded ? imageRef.current!.height / PUZZLE_SIZE : 0;
@@ -163,7 +198,7 @@ export default function Home() {
 						</div>
 					</div>
 					<DialogFooter>
-						<Button type="submit">Save changes</Button>
+						<Button type="submit" onClick={handleApiKeyUpdate}>Save changes</Button>
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
@@ -216,8 +251,23 @@ export default function Home() {
 
           <div className="flex justify-between w-full mt-2">
             <p>Moves: {moveCount}</p>
-            <Timer isRunning={gameStarted && !gameWon} onTime={() => {}} />
+            <Timer isRunning={gameStarted && !gameWon} onTime={(time) => setTime(time)} />
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="w-full max-w-md mt-4">
+        <CardContent>
+          <h2 className="text-lg font-semibold mb-2">High Scores</h2>
+          <ScrollArea className="h-[200px] w-full rounded-md border">
+            <div className="divide-y divide-border">
+              {highScores.map((score, index) => (
+                <div key={index} className="flex items-center justify-between py-2">
+                  <span>{index + 1}. Moves: {score.moves}, Time: {score.time}s</span>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
         </CardContent>
       </Card>
     </div>
