@@ -8,6 +8,16 @@ import { toast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { Hint, Timer } from "@/components/puzzle-components";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 
 const PUZZLE_SIZE = 4; // You can change this to 3 for a 3x3 puzzle, etc.
 const IMAGE_URL = 'https://picsum.photos/400/400';
@@ -23,6 +33,8 @@ export default function Home() {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const imageRef = useRef<HTMLImageElement>(null);
+	const [open, setOpen] = useState(false)
+	const [geminiApiKey, setGeminiApiKey] = useState('');
 
   useEffect(() => {
     const generatedPuzzle = generatePuzzle(PUZZLE_SIZE * PUZZLE_SIZE);
@@ -126,6 +138,35 @@ export default function Home() {
     <div className="flex flex-col items-center justify-center min-h-screen py-2">
       <Toaster />
       <h1 className="text-2xl font-bold mb-4">PuzzleMe</h1>
+			<Dialog open={open} onOpenChange={setOpen}>
+				<DialogTrigger asChild>
+					<Button variant="outline">Gemini API Key</Button>
+				</DialogTrigger>
+				<DialogContent className="sm:max-w-[425px]">
+					<DialogHeader>
+						<DialogTitle>Update Gemini API Key</DialogTitle>
+						<DialogDescription>
+							Enter your Gemini API key to enable hint generation.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="grid gap-4 py-4">
+						<div className="grid grid-cols-4 items-center gap-4">
+							<label htmlFor="name" className="text-right text-sm font-medium leading-none text-right">
+								API Key
+							</label>
+							<Input
+								id="name"
+								value={geminiApiKey}
+								onChange={(e) => setGeminiApiKey(e.target.value)}
+								className="col-span-3"
+							/>
+						</div>
+					</div>
+					<DialogFooter>
+						<Button type="submit">Save changes</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 
       <Card className="w-full max-w-md">
         <CardContent className="flex flex-col items-center">
