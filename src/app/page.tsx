@@ -174,35 +174,64 @@ export default function Home() {
     <div className="flex flex-col items-center justify-center min-h-screen py-2">
       <Toaster />
       <h1 className="text-2xl font-bold mb-4">PuzzleMe</h1>
-			<Dialog open={open} onOpenChange={setOpen}>
-				<DialogTrigger asChild>
-					<Button variant="outline">Gemini API Key</Button>
-				</DialogTrigger>
-				<DialogContent className="sm:max-w-[425px]">
-					<DialogHeader>
-						<DialogTitle>Update Gemini API Key</DialogTitle>
-						<DialogDescription>
-							Enter your Gemini API key to enable hint generation.
-						</DialogDescription>
-					</DialogHeader>
-					<div className="grid gap-4 py-4">
-						<div className="grid grid-cols-4 items-center gap-4">
-							<label htmlFor="name" className="text-right text-sm font-medium leading-none text-right">
-								API Key
-							</label>
-							<Input
-								id="name"
-								value={geminiApiKey}
-								onChange={(e) => setGeminiApiKey(e.target.value)}
-								className="col-span-3"
-							/>
-						</div>
-					</div>
-					<DialogFooter>
-						<Button type="submit" onClick={handleApiKeyUpdate}>Save changes</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+      <div className="flex gap-2">
+        <Dialog open={openHighScores} onOpenChange={setOpenHighScores}>
+          <DialogTrigger asChild>
+            <Button variant="outline">High Scores</Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>High Scores</DialogTitle>
+              <DialogDescription>
+                Top 10 puzzle scores.
+              </DialogDescription>
+            </DialogHeader>
+            <CardContent>
+              <ScrollArea className="h-[200px] w-full rounded-md border">
+                <div className="divide-y divide-border">
+                  {highScores.map((score, index) => (
+                    <div key={index} className="flex items-center justify-between py-2">
+                      <span>{index + 1}. Moves: {score.moves}, Time: {score.time}s</span>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </CardContent>
+            <DialogFooter>
+              <Button type="button" onClick={() => setOpenHighScores(false)}>Close</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+			  <Dialog open={open} onOpenChange={setOpen}>
+				  <DialogTrigger asChild>
+					  <Button variant="outline">Gemini API Key</Button>
+				  </DialogTrigger>
+				  <DialogContent className="sm:max-w-[425px]">
+					  <DialogHeader>
+						  <DialogTitle>Update Gemini API Key</DialogTitle>
+						  <DialogDescription>
+							  Enter your Gemini API key to enable hint generation.
+						  </DialogDescription>
+					  </DialogHeader>
+					  <div className="grid gap-4 py-4">
+						  <div className="grid grid-cols-4 items-center gap-4">
+							  <label htmlFor="name" className="text-right text-sm font-medium leading-none text-right">
+								  API Key
+							  </label>
+							  <Input
+								  id="name"
+								  value={geminiApiKey}
+								  onChange={(e) => setGeminiApiKey(e.target.value)}
+								  className="col-span-3"
+							  />
+						  </div>
+					  </div>
+					  <DialogFooter>
+						  <Button type="submit" onClick={handleApiKeyUpdate}>Save changes</Button>
+					  </DialogFooter>
+				  </DialogContent>
+			  </Dialog>
+      </div>
 
       <Card className="w-full max-w-md">
         <CardContent className="flex flex-col items-center">
@@ -254,35 +283,9 @@ export default function Home() {
             <p>Moves: {moveCount}</p>
             <Timer isRunning={gameStarted && !gameWon} onTime={(time) => setTime(time)} />
           </div>
-          <Dialog open={openHighScores} onOpenChange={setOpenHighScores}>
-            <DialogTrigger asChild>
-              <Button variant="outline">High Scores</Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>High Scores</DialogTitle>
-                <DialogDescription>
-                  Top 10 puzzle scores.
-                </DialogDescription>
-              </DialogHeader>
-              <CardContent>
-                <ScrollArea className="h-[200px] w-full rounded-md border">
-                  <div className="divide-y divide-border">
-                    {highScores.map((score, index) => (
-                      <div key={index} className="flex items-center justify-between py-2">
-                        <span>{index + 1}. Moves: {score.moves}, Time: {score.time}s</span>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-              <DialogFooter>
-                <Button type="button" onClick={() => setOpenHighScores(false)}>Close</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
         </CardContent>
       </Card>
     </div>
   );
 }
+
